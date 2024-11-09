@@ -1,0 +1,32 @@
+.panelForm {
+    display: flex;
+    margin: auto;
+    max-width: 350px;
+    width: 100%;
+    flex-direction: column;
+    padding: 25px;
+    box-shadow: 0 0 15px 1px grey;
+    border-radius: 10px;
+}
+
+.input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.label {
+    font-size: 18px;
+}
+
+.error {
+    display: block;
+    height: 18px;
+    color: red;
+}
+
+.link {
+    cursor: pointer;
+    text-decoration: none;
+    padding-top: 15px;
+}
+
