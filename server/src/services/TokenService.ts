@@ -5,6 +5,7 @@ import {TokenEntity} from "../models/TokenEntity";
 import {v4 as uuid} from 'uuid';
 import * as fs from "fs";
 import path from "path";
+import {UserTokenData} from "../dto/UserTokenData";
 
 export class TokenService {
 
@@ -26,7 +27,7 @@ export class TokenService {
         await TokenEntity.destroy({where: {token}});
     }
 
-    async generateTokens(userData: UserDto): Promise<{ accessToken: string, refreshToken: string }> {
+    async generateTokens(userData: UserTokenData): Promise<{ accessToken: string, refreshToken: string }> {
         const privateKey = fs.readFileSync(path.resolve(__dirname, '..', '..', 'privateAccess.pem'), 'utf8');
         const accessToken: string = 'Bearer ' + jwt.sign({id: userData.id, login: userData.login, role: userData.role}
             , privateKey
@@ -39,18 +40,18 @@ export class TokenService {
         return {accessToken, refreshToken};
     }
 
-    verifyAccessToken(accessToken: string): Pick<UserDto, 'email' | 'isActivate'> {
+    verifyAccessToken(accessToken: string): UserTokenData {
         try {
             const publicKey = fs.readFileSync(path.resolve(__dirname, '..', '..', 'publicAccess.pem'), 'utf8');
-            return <Pick<UserDto, 'email' | 'isActivate' >>jwt.verify(accessToken, publicKey);
+            return <UserTokenData>jwt.verify(accessToken, publicKey);
         } catch (error) {
             throw new UnauthorizedError('Пользователь не авторизован');
         }
     }
 
-    verifyRefreshToken(refreshToken: string) {
+    verifyRefreshToken(refreshToken: string): UserTokenData {
         try {
-           return jwt.verify(refreshToken, process.env.ACCESS_TOKEN_SECRET!);
+           return <UserTokenData>jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
         } catch (error) {
             throw new UnauthorizedError('Пользователь не авторизован');
         }

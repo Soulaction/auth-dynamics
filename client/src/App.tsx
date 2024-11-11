@@ -6,7 +6,7 @@ import * as s from "./App.module.css";
 const App = () => {
     return (
         <div className={s.page}>
-            <RouterProvider router={router}/>
+            <RouterProvider router={router} basename="/auth"/>
         </div>
     );
 };

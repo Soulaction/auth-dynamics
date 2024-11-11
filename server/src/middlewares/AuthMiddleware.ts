@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
 import {UnauthorizedError} from "../errors/UnauthorizedError";
 import tokenService from "../services/TokenService";
-import {UserDto} from "../dto/UserDto";
+import {UserTokenData} from "../dto/UserTokenData";
 
 export default function (req: Request, res: Response, next: NextFunction) {
     const {authorization} = req.headers;
@@ -11,16 +11,16 @@ export default function (req: Request, res: Response, next: NextFunction) {
     }
 
     const tokenData: string[] = authorization!.split(' ');
-    if (tokenData[0] === 'Bearer' && tokenData[1]) {
+    if (!(tokenData[0] === 'Bearer') || !tokenData[1]) {
         next(new UnauthorizedError(textError));
     }
 
-    let user: Pick<UserDto, 'email' | 'isActivate'>;
+    let user: UserTokenData;
     try {
         user = tokenService.verifyAccessToken(tokenData[1]);
         req['user'] = user;
     } catch (error) {
-        next(error);
+        next(new UnauthorizedError(textError));
     }
     next();
 }

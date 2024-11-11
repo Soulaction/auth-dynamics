@@ -38,9 +38,10 @@ class AuthController {
 
     async refresh(req: Request, res: Response, next: NextFunction) {
         const {refreshToken} = req.cookies;
-        const userData = (req as any).user!;
         try {
-            await authService.refresh(userData, refreshToken);
+            const {accessToken, refreshToken: newRefreshToken} = await authService.refresh(refreshToken);
+            res.cookie('refreshToken', newRefreshToken, {maxAge: ms(process.env.REFRESH_EXPIRES!), httpOnly: true});
+            res.status(200).json({accessToken});
         } catch (error) {
             next(error);
         }
@@ -50,7 +51,7 @@ class AuthController {
         try {
             const {refreshToken} = req.cookies;
             await authService.logout(refreshToken);
-            res.cookie('refreshToken', '', {maxAge: -1});
+            res.clearCookie('refreshToken');
             res.status(204).json();
         } catch (error) {
             next(error);

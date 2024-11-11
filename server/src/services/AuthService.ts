@@ -6,6 +6,8 @@ import tokenService from "./TokenService";
 import {UnauthorizedError} from "../errors/UnauthorizedError";
 import {UserDto} from "../dto/UserDto";
 import mailService from "./MailService";
+import {UserTokenData} from "../dto/UserTokenData";
+import {TokenEntity} from "../models/TokenEntity";
 
 export class AuthService {
     async registration(login: string, email: string, password: string) {
@@ -35,13 +37,19 @@ export class AuthService {
         return {accessToken, refreshToken};
     }
 
-    async refresh(userData: UserDto, token: string): Promise<{ accessToken: string, refreshToken: string }> {
+    async refresh(token: string): Promise<{ accessToken: string, refreshToken: string }> {
         if (!token) {
             throw new UnauthorizedError('Пользователь не авторизован')
         }
-        tokenService.verifyRefreshToken(token);
+
+        const tokenSession = await TokenEntity.findOne({where: {token}});
+        if (!tokenSession) {
+            throw new UnauthorizedError('Пользователь не авторизован')
+        }
+
+        const userTokenData: UserTokenData = tokenService.verifyRefreshToken(token.split(' ')[1]);
         await tokenService.removeToken(token);
-        const {accessToken, refreshToken} = await tokenService.generateTokens(userData);
+        const {accessToken, refreshToken} = await tokenService.generateTokens(userTokenData);
 
         return {accessToken, refreshToken};
     }
